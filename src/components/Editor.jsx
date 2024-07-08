@@ -24,6 +24,39 @@ const Leaf = props => {
     )
 }
 
+const CustomEditor = {
+  isBoldMarkActive(editor) {
+    const marks = Editor.marks(editor)
+    return marks ? marks.bold === true : false;
+  },
+  
+  isCodeBlockActive(editor) {
+    const [match] = Editor.nodes(editor, {
+      match: n => n.type === 'code',
+    })
+
+    return !!match
+  },
+
+  toggleBoldMark(editor) {
+    const isActive = CustomEditor.isBoldMarkActive(editor)
+    if (isActive) {
+      Editor.removeMark(editor, 'bold')
+    } else {
+      Editor.addMark(editor, 'bold', true)
+    }
+  },
+
+  toggleCodeBlock(editor) {
+    const isActive = CustomEditor.isCodeBlockActive(editor)
+
+    Transforms.setNodes(
+      editor,
+      { type: isActive ? null : 'code' },
+      { match: n => Element.isElement(n) && Editor.isBlock(editor, n) })   
+  }
+}
+
 const initialValue = [
   {
     type: 'paragraph',
@@ -61,48 +94,15 @@ const Neditor = () => {
           if (!e.ctrlKey) {
             return
           }
-
           switch (e.key) {
             case '`': {
               e.preventDefault()
-
-              const [match] = Editor.nodes(editor, {
-                match: n => n.type === 'code',
-              })
-
-              Transforms.setNodes(
-                editor,
-                { type: match ? 'paragraph' : 'code' },
-                { match: n => Element.isElement(n) && Editor.isBlock(editor, n) }
-                )
+              CustomEditor.toggleCodeBlock(editor)
               break;
             }
             case 'b': {
               event.preventDefault()
-              let marks = Editor.marks(editor)
-              let isBold = marks ? marks.bold === true : false
-              if (isBold) {
-                Editor.removeMark(editor, 'bold')
-              } else {
-                Editor.addMark(editor, 'bold', true)
-              }
-              break;
-            }
-            case 'i': {
-              event.preventDefault()
-              console.log(Element)
-              Editor.removeMark(editor)
-              //Editor.addMark(editor, 'italic', true)
-              break;
-            }
-            case 'u': {
-              event.preventDefault()
-              Editor.addMark(editor, 'underline', true)
-              break;
-            }
-            case 's': {
-              event.preventDefault()
-              Editor.addMark(editor, 'strikethrough', true)
+              CustomEditor.toggleBoldMark(editor)
               break;
             }
           }
