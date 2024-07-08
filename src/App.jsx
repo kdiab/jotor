@@ -1,9 +1,9 @@
-import Editor from './components/Editor.jsx';
+import Neditor from './components/Editor.jsx';
 
 function App() {
 
   return (
-    <Editor />
+    <Neditor />
   );
 }
 
