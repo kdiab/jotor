@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Editor, Transforms, Element, createEditor } from 'slate'
 import { Slate, Editable, withReact } from 'slate-react'
 
@@ -57,17 +57,6 @@ const CustomEditor = {
   }
 }
 
-const initialValue = [
-  {
-    type: 'paragraph',
-    children: [{ text: 'TEST STRING TEST STRING TEST STRING' }],
-  },
-  {
-    type: 'code',
-    children: [{ text: 'CODE BLOCK\nCODE BLOCK\nCODE BLOCK' }],
-  },
-]
-
 const renderElement = props => {
     switch (props.element.type) {
       case 'code':
@@ -84,9 +73,27 @@ const renderLeaf = props => {
 
 const Neditor = () => {
   const [editor] = useState(() => withReact(createEditor()));
-  
+  const initialValue = useMemo (
+    () => JSON.parse(localStorage.getItem('content')) || [
+      {
+        type: 'paragraph',
+        children: [{ text: 'TYPE SOMETHING IDOIT' }],
+      },
+      ],
+      []
+  ) 
   return (
-    <Slate editor={editor} initialValue={initialValue}>
+    <Slate editor={editor} initialValue={initialValue}
+      onChange={value => {
+        const isAstChange = editor.operations.some(
+          op => 'set_selection' !== op.type)
+          if (isAstChange) {
+            const content = JSON.stringify(value)
+            localStorage.setItem('content', content)
+          }
+        }
+      }
+    >
       <Editable 
         renderElement={renderElement}
         renderLeaf={renderLeaf}
