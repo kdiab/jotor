@@ -79,13 +79,25 @@ const Blocks = ({ attributes, children, element }) => {
   }
 };
 
-const Leaf = (props) => {
-  return (
-    <span {...props.attributes} style={{ fontWeight: props.leaf.bold ? 'bold' : 'normal' }}>
-      {props.children}
-    </span>
-  );
-};
+const Leaf = ({ attributes, children, leaf }) => {
+  if (leaf.bold) {
+    children = <strong>{children}</strong>
+  }
+
+  if (leaf.code) {
+    children = <code>{children}</code>
+  }
+
+  if (leaf.italic) {
+    children = <em>{children}</em>
+  }
+
+  if (leaf.underline) {
+    children = <u>{children}</u>
+  }
+
+  return <span {...attributes}>{children}</span>
+}
 
 const isBlockActive = (editor, format, blockType = 'type') => {
   const { selection } = editor;
@@ -175,6 +187,28 @@ const BlockButton = ({ format }) => {
   );
 };
 
+const MarkButton = ({ format }) => {
+  const editor = useSlate();
+  const isActive = isMarkActive(editor, format);
+  return (
+    <button
+      style={{
+        backgroundColor: isActive ? 'blue' : 'gray',
+        color: 'white',
+        border: 'none',
+        padding: '10px',
+        cursor: 'pointer',
+      }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        toggleMark(editor, format);
+      }}
+    >
+      {format}
+    </button>
+  );
+};
+
 const renderElement = (props) => {
   return <Blocks {...props} />;
 };
@@ -206,6 +240,10 @@ const Miv = () => {
         }
       }}
     >
+      <MarkButton format="bold" />
+      <MarkButton format="italic" />
+      <MarkButton format="underline" />
+      <MarkButton format="code" />
       <BlockButton format="h1" />
       <BlockButton format="h2" />
       <BlockButton format="h3" />
