@@ -1,9 +1,9 @@
-import Neditor from './components/Editor.jsx';
+import Miv from './components/Miv.jsx';
 
 function App() {
 
   return (
-    <Neditor />
+    <Miv />
   );
 }
 
