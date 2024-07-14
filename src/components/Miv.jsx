@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Editor, Transforms, Element, createEditor, Point, Range } from 'slate';
+import { Editor, Transforms, Element, createEditor, Point, Range, Node } from 'slate';
 import { Slate, Editable, withReact, useSlate, useReadOnly, useSlateStatic, ReactEditor } from 'slate-react';
 import { withHistory } from 'slate-history';
 import isHotkey from 'is-hotkey';
@@ -46,6 +46,39 @@ const Miv = () => {
         spellCheck
         autoFocus
         onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            const currentBlock = Node.descendant(editor, editor.selection.anchor.path.slice(0, -1));
+            console.log(currentBlock)
+            const newLine = {
+                  type: "paragraph",
+                  children: [
+                    {
+                      text: "",
+                      marks: []
+                    }
+                  ]
+            };
+            switch(currentBlock.type) {
+              case 'h1': 
+              case 'h2':
+              case 'h3':
+              case 'h4':
+              case 'h5':
+                e.preventDefault()
+                Transforms.insertNodes(editor, newLine);
+                break;
+              case 'list-item':
+              case 'numbered-list-item':
+              case 'check-list':
+                if (currentBlock.children[0].text === '') {
+                  e.preventDefault()
+                  Transforms.insertNodes(editor, newLine);
+                }
+                break;
+              default:
+                return;
+          }
+        }
           for (const key in HOTKEYS) {
             if (isHotkey(key, e)) {
               e.preventDefault();
