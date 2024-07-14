@@ -1,7 +1,63 @@
-import { useState, useMemo } from 'react';
-import { Editor, Transforms, Element, createEditor } from 'slate';
-import { Slate, Editable, withReact, useSlate } from 'slate-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Editor, Transforms, Element, createEditor, Point, Range } from 'slate';
+import { Slate, Editable, withReact, useSlate, useReadOnly, useSlateStatic, ReactEditor } from 'slate-react';
+import { withHistory } from 'slate-history';
 import isHotkey from 'is-hotkey';
+
+const Miv = () => {
+  const [editor] = useState(() => withChecklists(withHistory(withReact(createEditor()))));
+  const initialValue = useMemo(
+    () => JSON.parse(localStorage.getItem('content')) || [
+      {
+        type: 'paragraph',
+        children: [{ text: 'TYPE SOMETHING IDIOT' }],
+      },
+    ],
+    []
+  );
+  return (
+    <Slate
+      editor={editor}
+      initialValue={initialValue}
+      onChange={(value) => {
+        const isAstChange = editor.operations.some((op) => 'set_selection' !== op.type);
+        if (isAstChange) {
+          const content = JSON.stringify(value);
+          localStorage.setItem('content', content);
+        }
+      }}
+    >
+      <HeadingDropdown />
+      <MarkButton format="bold" />
+      <MarkButton format="italic" />
+      <MarkButton format="underline" />
+      <MarkButton format="code" />
+      <BlockButton format="check-list" />
+      <BlockButton format="block-quote" />
+      <BlockButton format="numbered-list" />
+      <BlockButton format="bulleted-list" />
+      <BlockButton format="left" />
+      <BlockButton format="center" />
+      <BlockButton format="right" />
+      <BlockButton format="justify" />
+      <Editable
+        renderElement={renderElement}
+        renderLeaf={renderLeaf}
+        spellCheck
+        autoFocus
+        onKeyDown={(e) => {
+          for (const key in HOTKEYS) {
+            if (isHotkey(key, e)) {
+              e.preventDefault();
+              const mark = HOTKEYS[key];
+              toggleMark(editor, mark);
+            }
+          }
+        }}
+      />
+    </Slate>
+  );
+};
 
 const HOTKEYS = {
   'mod+b': 'bold',
@@ -15,6 +71,7 @@ const TEXT_ALIGN_TYPES = ['left', 'center', 'right', 'justify'];
 
 const Blocks = ({ attributes, children, element }) => {
   const style = { textAlign: element.align };
+  const props = { attributes, children, element }
   switch (element.type) {
     case 'block-quote':
       return (
@@ -70,6 +127,8 @@ const Blocks = ({ attributes, children, element }) => {
           {children}
         </ol>
       );
+    case 'check-list':
+      return <CheckList {...props} />
     default:
       return (
         <p style={style} {...attributes}>
@@ -211,6 +270,7 @@ const MarkButton = ({ format }) => {
 
 const HeadingDropdown = () => {
   const editor = useSlate();
+  const [currentHeading, setCurrentHeading] = useState('');
 
   const handleChange = (event) => {
     const format = event.target.value;
@@ -221,8 +281,19 @@ const HeadingDropdown = () => {
 
   const headingOptions = ['h1', 'h2', 'h3', 'h4', 'h5'];
 
+  useEffect(() => {
+    const headingOptions = ['h1', 'h2', 'h3', 'h4', 'h5'];
+    for (let heading of headingOptions) {
+      if (isBlockActive(editor, heading)) {
+        setCurrentHeading(heading);
+        return;
+      }
+    }
+  },[editor])
+
+
   return (
-    <select onChange={handleChange} defaultValue="">
+    <select onChange={handleChange} value={currentHeading}>
       <option value="" disabled>
         Heading
       </option>
@@ -243,57 +314,89 @@ const renderLeaf = (props) => {
   return <Leaf {...props} />;
 };
 
-const Miv = () => {
-  const [editor] = useState(() => withReact(createEditor()));
-  const initialValue = useMemo(
-    () => JSON.parse(localStorage.getItem('content')) || [
-      {
-        type: 'paragraph',
-        children: [{ text: 'TYPE SOMETHING IDIOT' }],
-      },
-    ],
-    []
-  );
-  return (
-    <Slate
-      editor={editor}
-      initialValue={initialValue}
-      onChange={(value) => {
-        const isAstChange = editor.operations.some((op) => 'set_selection' !== op.type);
-        if (isAstChange) {
-          const content = JSON.stringify(value);
-          localStorage.setItem('content', content);
+const withChecklists = editor => {
+  const { deleteBackward } = editor
+
+  editor.deleteBackward = (...args) => {
+    const { selection } = editor
+
+    if (selection && Range.isCollapsed(selection)) {
+      const [match] = Editor.nodes(editor, {
+        match: n =>
+          !Editor.isEditor(n) &&
+          Element.isElement(n) &&
+          n.type === 'check-list',
+      })
+
+      if (match) {
+        const [, path] = match
+        const start = Editor.start(editor, path)
+
+        if (Point.equals(selection.anchor, start)) {
+          const newProperties = {
+            type: 'paragraph',
+          }
+          Transforms.setNodes(editor, newProperties, {
+            match: n =>
+              !Editor.isEditor(n) &&
+              Element.isElement(n) &&
+              n.type === 'check-list',
+          })
+          return
         }
+      }
+    }
+
+    deleteBackward(...args)
+  }
+
+  return editor
+}
+
+const CheckList = ({ attributes, children, element }) => {
+  const editor = useSlateStatic();
+  const readOnly = useReadOnly();
+  const { checked = false } = element; // Default to false if checked is undefined
+
+  return (
+    <div
+      {...attributes}
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
       }}
     >
-      <HeadingDropdown />
-      <MarkButton format="bold" />
-      <MarkButton format="italic" />
-      <MarkButton format="underline" />
-      <MarkButton format="code" />
-      <BlockButton format="block-quote" />
-      <BlockButton format="numbered-list" />
-      <BlockButton format="bulleted-list" />
-      <BlockButton format="left" />
-      <BlockButton format="center" />
-      <BlockButton format="right" />
-      <BlockButton format="justify" />
-      <Editable
-        renderElement={renderElement}
-        renderLeaf={renderLeaf}
-        spellCheck
-        autoFocus
-        onKeyDown={(e) => {
-          for (const key in HOTKEYS) {
-            if (isHotkey(key, e)) {
-              e.preventDefault();
-              const mark = HOTKEYS[key];
-              toggleMark(editor, mark);
-            }
-          }
+      <span
+        contentEditable={false}
+        style={{
+          marginRight: '0.75em',
         }}
-      />
-    </Slate>
+      >
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={event => {
+            const path = ReactEditor.findPath(editor, element);
+            const newProperties = {
+              checked: event.target.checked,
+            };
+            Transforms.setNodes(editor, newProperties, { at: path });
+          }}
+        />
+      </span>
+      <span
+        contentEditable={!readOnly}
+        suppressContentEditableWarning
+        style={{
+          flex: 1,
+          opacity: checked ? 0.666 : 1,
+          textDecoration: checked ? 'line-through' : 'none',
+        }}
+      >
+        {children}
+      </span>
+    </div>
   );
 };
 
