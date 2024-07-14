@@ -209,6 +209,32 @@ const MarkButton = ({ format }) => {
   );
 };
 
+const HeadingDropdown = () => {
+  const editor = useSlate();
+
+  const handleChange = (event) => {
+    const format = event.target.value;
+    if (format) {
+      toggleBlock(editor, format);
+    }
+  };
+
+  const headingOptions = ['h1', 'h2', 'h3', 'h4', 'h5'];
+
+  return (
+    <select onChange={handleChange} defaultValue="">
+      <option value="" disabled>
+        Heading
+      </option>
+      {headingOptions.map((option) => (
+        <option key={option} value={option}>
+          {option.toUpperCase()}
+        </option>
+      ))}
+    </select>
+  );
+};
+
 const renderElement = (props) => {
   return <Blocks {...props} />;
 };
@@ -240,15 +266,11 @@ const Miv = () => {
         }
       }}
     >
+      <HeadingDropdown />
       <MarkButton format="bold" />
       <MarkButton format="italic" />
       <MarkButton format="underline" />
       <MarkButton format="code" />
-      <BlockButton format="h1" />
-      <BlockButton format="h2" />
-      <BlockButton format="h3" />
-      <BlockButton format="h4" />
-      <BlockButton format="h5" />
       <BlockButton format="block-quote" />
       <BlockButton format="numbered-list" />
       <BlockButton format="bulleted-list" />
