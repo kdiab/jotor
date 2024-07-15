@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Editor, Transforms, Element, createEditor, Point, Range, Node } from 'slate';
 import { Slate, Editable, withReact, useSlate, useReadOnly, useSlateStatic, ReactEditor } from 'slate-react';
 import { withHistory } from 'slate-history';
@@ -27,7 +27,8 @@ const Miv = () => {
         }
       }}
     >
-      <HeadingDropdown />
+      <BlockButton format="h1" />
+      <BlockButton format="h2" />
       <MarkButton format="bold" />
       <MarkButton format="italic" />
       <MarkButton format="underline" />
@@ -51,6 +52,7 @@ const Miv = () => {
             console.log(currentBlock)
             const newLine = {
                   type: "paragraph",
+                  align: "left",
                   children: [
                     {
                       text: "",
@@ -68,22 +70,35 @@ const Miv = () => {
                 Transforms.insertNodes(editor, newLine);
                 break;
               case 'list-item':
-              case 'numbered-list-item':
               case 'check-list':
                 if (currentBlock.children[0].text === '') {
                   e.preventDefault()
+                  Transforms.removeNodes(editor)
                   Transforms.insertNodes(editor, newLine);
+                  toggleBlock(editor, 'list-item');  
                 }
                 break;
               default:
                 return;
           }
-        }
-          for (const key in HOTKEYS) {
-            if (isHotkey(key, e)) {
-              e.preventDefault();
-              const mark = HOTKEYS[key];
-              toggleMark(editor, mark);
+        } else if (e.key === 'Backspace'){
+            const currentBlock = Node.descendant(editor, editor.selection.anchor.path.slice(0, -1));
+            switch(currentBlock.type) {
+              case 'list-item':
+                  if (currentBlock.children[0].text === '') {
+                    toggleBlock(editor, 'list-item');  
+                  }
+                  break;
+              default:
+                return;
+            }
+          } else {
+            for (const key in HOTKEYS) {
+              if (isHotkey(key, e)) {
+                e.preventDefault();
+                const mark = HOTKEYS[key];
+                toggleMark(editor, mark);
+              }
             }
           }
         }}
@@ -162,6 +177,12 @@ const Blocks = ({ attributes, children, element }) => {
       );
     case 'check-list':
       return <CheckList {...props} />
+    case 'paragraph':
+      return (
+        <p style={style} {...attributes}>
+          {children}
+        </p>
+      );
     default:
       return (
         <p style={style} {...attributes}>
@@ -301,44 +322,6 @@ const MarkButton = ({ format }) => {
   );
 };
 
-const HeadingDropdown = () => {
-  const editor = useSlate();
-  const [currentHeading, setCurrentHeading] = useState('');
-
-  const handleChange = (event) => {
-    const format = event.target.value;
-    if (format) {
-      toggleBlock(editor, format);
-    }
-  };
-
-  const headingOptions = ['h1', 'h2', 'h3', 'h4', 'h5'];
-
-  useEffect(() => {
-    const headingOptions = ['h1', 'h2', 'h3', 'h4', 'h5'];
-    for (let heading of headingOptions) {
-      if (isBlockActive(editor, heading)) {
-        setCurrentHeading(heading);
-        return;
-      }
-    }
-  },[editor])
-
-
-  return (
-    <select onChange={handleChange} value={currentHeading}>
-      <option value="" disabled>
-        Heading
-      </option>
-      {headingOptions.map((option) => (
-        <option key={option} value={option}>
-          {option.toUpperCase()}
-        </option>
-      ))}
-    </select>
-  );
-};
-
 const renderElement = (props) => {
   return <Blocks {...props} />;
 };
@@ -358,7 +341,7 @@ const withChecklists = editor => {
         match: n =>
           !Editor.isEditor(n) &&
           Element.isElement(n) &&
-          n.type === 'check-list',
+          (n.type === 'check-list' || n.type === 'list-item')
       })
 
       if (match) {
@@ -373,7 +356,7 @@ const withChecklists = editor => {
             match: n =>
               !Editor.isEditor(n) &&
               Element.isElement(n) &&
-              n.type === 'check-list',
+              (n.type === 'check-list' || n.type === 'list-item')
           })
           return
         }
