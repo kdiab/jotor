@@ -3,6 +3,7 @@ import { Editor, Transforms, Element, createEditor, Point, Range, Node } from 's
 import { Slate, Editable, withReact, useSlate, useReadOnly, useSlateStatic, ReactEditor } from 'slate-react';
 import { withHistory } from 'slate-history';
 import isHotkey from 'is-hotkey';
+import ScreenCapture from './ScreenCapture';
 
 const Miv = () => {
   const [editor] = useState(() => withChecklists(withHistory(withReact(createEditor()))));
@@ -27,6 +28,7 @@ const Miv = () => {
         }
       }}
     >
+      <ScreenCapture />
       <BlockButton format="h1" />
       <BlockButton format="h2" />
       <MarkButton format="bold" />
