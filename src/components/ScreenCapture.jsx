@@ -15,8 +15,9 @@ const ScreenCapture = () => {
   const captureScreen = async () => {
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { cursor: 'always' },
+        video: { cursor: 'never' },
         audio: false,
+        preferCurrentTab: true
       });
 
       const video = videoRef.current;
@@ -33,6 +34,8 @@ const ScreenCapture = () => {
   };
 
   const handleMouseDown = (e) => {
+    setStartX(e.clientX);
+    setStartY(e.clientY);
     if (!selectionMode) return;
     setIsSelecting(true);
     setStartX(e.clientX);
@@ -40,6 +43,8 @@ const ScreenCapture = () => {
   };
 
   const handleMouseMove = (e) => {
+    setEndX(e.clientX);
+    setEndY(e.clientY);
     if (!isSelecting) return;
     setEndX(e.clientX);
     setEndY(e.clientY);
@@ -53,8 +58,8 @@ const ScreenCapture = () => {
     const video = videoRef.current;
     const canvas = document.createElement('canvas');
     const rect = selectionBoxRef.current.getBoundingClientRect();
-    const x = startX;
-    const y = startY + 80;
+    const x = rect.left;
+    const y = rect.top + (window.outerHeight - window.innerHeight);
     const width = rect.width;
     const height = rect.height;
 
@@ -99,7 +104,6 @@ const ScreenCapture = () => {
             left: 0,
             width: '100%',
             height: '100%',
-            cursor: 'crosshair',
             zIndex: 999,
           }}
         >
