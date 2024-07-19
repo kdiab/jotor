@@ -53,8 +53,8 @@ const ScreenCapture = () => {
     const video = videoRef.current;
     const canvas = document.createElement('canvas');
     const rect = selectionBoxRef.current.getBoundingClientRect();
-    const x = rect.left + window.scrollX;
-    const y = rect.top + window.scrollY;
+    const x = startX;
+    const y = startY + 80;
     const width = rect.width;
     const height = rect.height;
 
