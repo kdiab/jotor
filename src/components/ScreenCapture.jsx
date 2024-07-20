@@ -1,26 +1,26 @@
 import React, { useState, useRef } from 'react';
 
-const ScreenCapture = () => {
-  const [isSelecting, setIsSelecting] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [startY, setStartY] = useState(0);
-  const [endX, setEndX] = useState(0);
-  const [endY, setEndY] = useState(0);
-  const [image, setImage] = useState(null);
-  const [selectionMode, setSelectionMode] = useState(false);
-  const videoRef = useRef(null);
-  const overlayRef = useRef(null);
-  const selectionBoxRef = useRef(null);
+let ScreenCapture = () => {
+  let [isSelecting, setIsSelecting] = useState(false);
+  let [startX, setStartX] = useState(0);
+  let [startY, setStartY] = useState(0);
+  let [endX, setEndX] = useState(0);
+  let [endY, setEndY] = useState(0);
+  let [image, setImage] = useState(null);
+  let [selectionMode, setSelectionMode] = useState(false);
+  let videoRef = useRef(null);
+  let overlayRef = useRef(null);
+  let selectionBoxRef = useRef(null);
 
-  const captureScreen = async () => {
+  let captureScreen = async () => {
     try {
-      const stream = await navigator.mediaDevices.getDisplayMedia({
+      let stream = await navigator.mediaDevices.getDisplayMedia({
         video: { cursor: 'never' },
         audio: false,
         preferCurrentTab: true
       });
 
-      const video = videoRef.current;
+      let video = videoRef.current;
       video.srcObject = stream;
 
       video.onloadedmetadata = () => {
@@ -33,42 +33,49 @@ const ScreenCapture = () => {
     }
   };
 
-  const handleMouseDown = (e) => {
+  let handleMouseDown = (e) => {
     setStartX(e.clientX);
     setStartY(e.clientY);
-    if (!selectionMode) return;
+    if (!selectionMode) {
+      return;
+    }
     setIsSelecting(true);
     setStartX(e.clientX);
     setStartY(e.clientY);
   };
 
-  const handleMouseMove = (e) => {
+  let handleMouseMove = (e) => {
     setEndX(e.clientX);
     setEndY(e.clientY);
-    if (!isSelecting) return;
+    if (!isSelecting) {
+      return;
+    }
     setEndX(e.clientX);
     setEndY(e.clientY);
   };
 
-  const handleMouseUp = async () => {
+  let handleMouseUp = async () => {
     if (!selectionMode) return;
     setIsSelecting(false);
     setSelectionMode(false);
 
-    const video = videoRef.current;
-    const canvas = document.createElement('canvas');
-    const rect = selectionBoxRef.current.getBoundingClientRect();
-    const x = rect.left;
-    const y = rect.top + (window.outerHeight - window.innerHeight);
-    const width = rect.width;
-    const height = rect.height;
+    let video = videoRef.current;
+    let canvas = document.createElement('canvas');
+    let rect = selectionBoxRef.current.getBoundingClientRect();
+    let x = rect.left;
+    let y = rect.top + (window.outerHeight - window.innerHeight);
+    let width = rect.width;
+    let height = rect.height;
 
     canvas.width = width;
     canvas.height = height;
-    const context = canvas.getContext('2d');
+    let context = canvas.getContext('2d');
 
     // Temporarily hide the overlay and selection box
-    overlayRef.current.style.display = 'none';
+    document.documentElement.style.cursor = 'none';
+    if (overlayRef.current) {
+      overlayRef.current.style.display = 'none';
+    }
 
     // Allow the video frame to render without the overlay
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -76,16 +83,19 @@ const ScreenCapture = () => {
     // Draw the selected region from the video onto the canvas
     context.drawImage(video, x, y, width, height, 0, 0, width, height);
 
-    const imageData = canvas.toDataURL('image/png');
+    let imageData = canvas.toDataURL('image/png');
     setImage(imageData);
 
     // Stop the video stream
-    const stream = video.srcObject;
+    let stream = video.srcObject;
     stream.getTracks().forEach((track) => track.stop());
     video.srcObject = null;
 
     // Restore the overlay display
-    overlayRef.current.style.display = 'block';
+    document.documentElement.style.cursor = '';
+    if (overlayRef.current) {
+      overlayRef.current.style.display = 'block';
+    }
   };
 
   return (
