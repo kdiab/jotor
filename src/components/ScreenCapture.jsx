@@ -1,13 +1,12 @@
 import { useState, useRef } from 'react';
 import Tesseract from 'tesseract.js';
 
-let ScreenCapture = () => {
+let ScreenCapture = ({ onCapture }) => {
   let [isSelecting, setIsSelecting] = useState(false);
   let [startX, setStartX] = useState(0);
   let [startY, setStartY] = useState(0);
   let [endX, setEndX] = useState(0);
   let [endY, setEndY] = useState(0);
-  let [image, setImage] = useState(null);
   let [selectionMode, setSelectionMode] = useState(false);
   let videoRef = useRef(null);
   let overlayRef = useRef(null);
@@ -85,18 +84,11 @@ let ScreenCapture = () => {
     context.drawImage(video, x, y, width, height, 0, 0, width, height);
 
     let imageData = canvas.toDataURL('image/png');
-    setImage(imageData);
 
     // Stop the video stream
     let stream = video.srcObject;
     stream.getTracks().forEach((track) => track.stop());
     video.srcObject = null;
-
-    // Restore the overlay display
-    document.documentElement.style.cursor = '';
-    if (overlayRef.current) {
-      overlayRef.current.style.display = 'block';
-    }
 
     // Use Tesseract to recognize text from the captured image
     Tesseract.recognize(
@@ -107,9 +99,15 @@ let ScreenCapture = () => {
       }
     ).then(({ data: { text } }) => {
       console.log('Recognized text:', text);
-        //  TODO:
-        //  insert recognized text as a component
+      let sanitizedText = text.replace(/[\t\n|]/g,' ');
+      onCapture(sanitizedText);
     });
+
+    // Restore the overlay display
+    document.documentElement.style.cursor = '';
+    if (overlayRef.current) {
+      overlayRef.current.style.display = 'block';
+    }
   };
 
   return (
