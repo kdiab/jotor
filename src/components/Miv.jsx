@@ -9,11 +9,8 @@ const Miv = () => {
   const [editor] = useState(() => withChecklists(withHistory(withReact(createEditor()))));
   const initialValue = useMemo(
     () => JSON.parse(localStorage.getItem('content')) || [
-      {
-        type: 'paragraph',
-        children: [{ text: 'TYPE SOMETHING IDIOT' }],
-      },
-    ],
+      {"type":"paragraph","align":"left","checked":false,"children":[{"marks":[],"text":"TEST"}]},{"type":"h1","align":"left","checked":false,"children":[{"marks":[],"text":"1"}]},{"type":"h2","align":"left","children":[{"text":"2","marks":[]}]},{"type":"paragraph","align":"left","children":[{"text":"BOLD","marks":[],"bold":true}]},{"type":"paragraph","align":"left","children":[{"text":"italic","marks":[],"italic":true}]},{"type":"paragraph","align":"left","children":[{"text":"underline","marks":[],"underline":true}]},{"type":"paragraph","align":"left","children":[{"text":"<code>","marks":[],"code":true}]},{"type":"check-list","align":"left","children":[{"text":"Check","marks":[]}]},{"type":"check-list","align":"left","children":[{"marks":[],"text":"List"}],"checked":true},{"type":"block-quote","align":"left","children":[{"text":"Quote","marks":[]}]},{"type":"numbered-list","children":[{"type":"list-item","align":"left","children":[{"marks":[],"text":"list"}]}]},{"type":"bulleted-list","children":[{"type":"list-item","align":"left","children":[{"marks":[],"text":"bullet list"}]}]},{"type":"list-item","align":"left","children":[{"text":"left","marks":[]}]},{"type":"list-item","align":"center","children":[{"marks":[],"text":"center"}]},{"type":"list-item","align":"right","children":[{"marks":[],"text":"right"}]},{"type":"list-item","align":"justify","children":[{"marks":[],"text":"justify"}]},{"type":"list-item","children":[{"marks":[],"text":""}]}]
+    ,
     []
   );
   return (
@@ -113,7 +110,7 @@ const HOTKEYS = {
   'mod+b': 'bold',
   'mod+i': 'italic',
   'mod+u': 'underline',
-  'mod+`': 'code',
+  'mod+`': 'code'
 };
 
 const LIST_TYPES = ['numbered-list', 'bulleted-list'];

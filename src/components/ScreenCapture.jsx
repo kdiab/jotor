@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
+import Tesseract from 'tesseract.js';
 
 let ScreenCapture = () => {
   let [isSelecting, setIsSelecting] = useState(false);
@@ -96,6 +97,19 @@ let ScreenCapture = () => {
     if (overlayRef.current) {
       overlayRef.current.style.display = 'block';
     }
+
+    // Use Tesseract to recognize text from the captured image
+    Tesseract.recognize(
+      imageData,
+      'eng',
+      {
+        logger: (m) => console.log(m)
+      }
+    ).then(({ data: { text } }) => {
+      console.log('Recognized text:', text);
+        //  TODO:
+        //  insert recognized text as a component
+    });
   };
 
   return (
@@ -134,14 +148,9 @@ let ScreenCapture = () => {
           )}
         </div>
       )}
-      {image && (
-        <div>
-          <h2>Captured Image</h2>
-          <img src={image} alt="Captured region" />
-        </div>
-      )}
     </div>
   );
 };
 
 export default ScreenCapture;
+
