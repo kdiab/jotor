@@ -23,6 +23,14 @@ let Miv = () => {
   useEffect(() => {
     if (recognizedText) {
       // Insert the recognized text into the editor
+      let active = isBlockActive(
+        editor,
+        'list-item',
+        'type'
+      );
+      if (active) {
+        toggleBlock(editor, 'list-item');
+      }
       Transforms.insertNodes(editor, Quote(recognizedText));
     }
       setRecognizedText('');
@@ -117,6 +125,8 @@ let Miv = () => {
               case 'block-quote':
                   if (currentBlock.children[0].text === '') {
                     Transforms.setNodes(editor, newLine);
+                    editor.removeMark('bold');
+                    editor.removeMark('italic');
                   }
                   break;
               default:
