@@ -1,13 +1,17 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Editor, Transforms, Element, createEditor, Point, Range, Node } from 'slate';
-import { Slate, Editable, withReact, useSlate, useReadOnly, useSlateStatic, ReactEditor } from 'slate-react';
+import { Slate, Editable, withReact, useSlate, useReadOnly, useSlateStatic, ReactEditor, useFocused, useSelected } from 'slate-react';
 import { withHistory } from 'slate-history';
 import isHotkey from 'is-hotkey';
+import isUrl from 'is-url';
+import imageExtensions from 'image-extensions';
 import ScreenCapture from './ScreenCapture';
+
+import './Miv.css';
 
 let Miv = () => {
   let [recognizedText, setRecognizedText] = useState('');
-  let [editor] = useState(() => withChecklists(withHistory(withReact(createEditor()))));
+  let [editor] = useState(() => withImages(withChecklists(withHistory(withReact(createEditor())))));
 
   let handleTextRecognition = (text) => {
     setRecognizedText(text);
@@ -48,6 +52,7 @@ let Miv = () => {
       }}
     >
       <ScreenCapture onCapture={handleTextRecognition} />
+      <InsertImageButton />
       <BlockButton format="h1" />
       <BlockButton format="h2" />
       <MarkButton format="bold" />
@@ -232,6 +237,8 @@ let Blocks = ({ attributes, children, element }) => {
           {children}
         </p>
       );
+    case 'image':
+      return <Image {...props} />
     default:
       return (
         <p style={style} {...attributes}>
@@ -464,6 +471,106 @@ let CheckList = ({ attributes, children, element }) => {
     </div>
   );
 };
+
+const withImages = editor => {
+  const { insertData, isVoid } = editor
+
+  editor.isVoid = element => {
+    return element.type === 'image' ? true : isVoid(element)
+  }
+
+  editor.insertData = data => {
+    const text = data.getData('text/plain')
+    const { files } = data
+
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const reader = new FileReader()
+        const [mime] = file.type.split('/')
+
+        if (mime === 'image') {
+          reader.addEventListener('load', () => {
+            const url = reader.result
+            insertImage(editor, url)
+          })
+
+          reader.readAsDataURL(file)
+        }
+      }
+    } else if (isImageUrl(text)) {
+      insertImage(editor, text)
+    } else {
+      insertData(data)
+    }
+  }
+
+  return editor
+}
+
+const Image = ({ attributes, children, element }) => {
+  const editor = useSlateStatic()
+  const path = ReactEditor.findPath(editor, element)
+  const selected = useSelected()
+  const focused = useFocused()
+
+  return (
+    <div {...attributes}>
+      {children}
+      <div
+        contentEditable={false}
+        className="image-container"
+      >
+        <img
+          src={element.url}
+          className={`image ${selected && focused ? 'selected focused' : ''}`}
+        />
+        <button
+          onClick={() => {
+            Transforms.removeNodes(editor, { at: path })}}
+          className={`button ${selected && focused ? 'show' : ''}`}
+        >
+          delete
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const InsertImageButton = () => {
+  const editor = useSlateStatic()
+  return (
+    <button
+      onMouseDown={event => {
+        event.preventDefault()
+        const url = window.prompt('Enter the URL of the image:')
+        if (url && !isImageUrl(url)) {
+          alert('URL is not an image')
+          return
+        }
+        url && insertImage(editor, url)
+      }}
+    >
+      image
+    </button>
+  )
+}
+
+const insertImage = (editor, url) => {
+  const text = { text: '' }
+  const image = { type: 'image', url, children: [text] }
+  Transforms.insertNodes(editor, image)
+  Transforms.insertNodes(editor, {
+    type: 'paragraph',
+    children: [{ text: '' }],
+  })
+}
+
+const isImageUrl = url => {
+  if (!url) return false
+  if (!isUrl(url)) return false
+  const ext = new URL(url).pathname.split('.').pop()
+  return imageExtensions.includes(ext)
+}
 
 export default Miv;
 
