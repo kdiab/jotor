@@ -1,8 +1,8 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { Transforms } from 'slate';
 import { useSlateStatic } from 'slate-react';
 
-const ImageElement = ({ attributes, children, element }) => {
+let ImageElement = ({ attributes, children, element }) => {
   return (
     <div {...attributes}>
       <div contentEditable={false}>
@@ -13,33 +13,33 @@ const ImageElement = ({ attributes, children, element }) => {
   );
 };
 
-const insertImage = (editor, url) => {
-  const text = { text: '' };
-  const image = { type: 'image', url, children: [text] };
+let InsertImage = (editor, url) => {
+  let text = { text: '' };
+  let image = { type: 'image', url, children: [text] };
   Transforms.insertNodes(editor, image);
 };
 
-const isImageUrl = (url) => {
+let IsImageUrl = (url) => {
   if (!url) return false;
-  const ext = new URL(url).pathname.split('.').pop();
+  let ext = new URL(url).pathname.split('.').pop();
   return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext);
 };
 
-const ImageUploadButton = () => {
-  const editor = useSlateStatic();
-  const inputRef = useRef(null);
+let ImageUploadButton = () => {
+  let editor = useSlateStatic();
+  let inputRef = useRef(null);
 
-  const handleButtonClick = () => {
+  let handleButtonClick = () => {
     inputRef.current.click();
   };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
+  let handleFileChange = (event) => {
+    let file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
+      let reader = new FileReader();
       reader.addEventListener('load', () => {
-        const url = reader.result;
-        insertImage(editor, url);
+        let url = reader.result;
+        InsertImage(editor, url);
       });
       reader.readAsDataURL(file);
     }
@@ -58,4 +58,4 @@ const ImageUploadButton = () => {
   );
 };
 
-export { ImageUploadButton, ImageElement, insertImage, isImageUrl };
+export { ImageUploadButton, ImageElement, InsertImage, IsImageUrl };

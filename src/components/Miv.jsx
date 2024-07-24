@@ -1,11 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Editor, Transforms, Element, createEditor, Point, Range, Node } from 'slate';
-import { Slate, Editable, withReact, useSlate, useReadOnly, useSlateStatic, ReactEditor, useFocused, useSelected } from 'slate-react';
-import { ImageUploadButton, ImageElement, insertImage, isImageUrl } from './Image';
+import { Slate, Editable, withReact, useSlate, useReadOnly, useSlateStatic, ReactEditor} from 'slate-react';
+import { ImageUploadButton, ImageElement, InsertImage, IsImageUrl } from './Image';
 import { withHistory } from 'slate-history';
 import isHotkey from 'is-hotkey';
-import isUrl from 'is-url';
-import imageExtensions from 'image-extensions';
 import ScreenCapture from './ScreenCapture';
 
 import './Miv.css';
@@ -490,12 +488,12 @@ const withImages = (editor) => {
 
       reader.addEventListener('load', () => {
         const url = reader.result;
-        insertImage(editor, url);
+        InsertImage(editor, url);
       });
 
       reader.readAsDataURL(file);
-    } else if (isImageUrl(text)) {
-      insertImage(editor, text);
+    } else if (IsImageUrl(text)) {
+      InsertImage(editor, text);
     } else {
       insertData(data);
     }
