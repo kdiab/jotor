@@ -8,44 +8,40 @@ import ScreenCapture from './ScreenCapture';
 
 import './Miv.css';
 
-let Miv = () => {
-  let [recognizedText, setRecognizedText] = useState('');
-  let [editor] = useState(() => withImages(withChecklists(withHistory(withReact(createEditor())))));
+const Miv = () => {
+  const [recognizedText, setRecognizedText] = useState('');
+  const [editor] = useState(() => withImages(withChecklists(withHistory(withReact(createEditor())))));
 
-  let handleTextRecognition = (text) => {
+  const handleTextRecognition = (text) => {
     setRecognizedText(text);
   };
 
-  //TODO: REMOVE TEST DATA and put something more meaningful here
-  let initialValue = useMemo(
+  const initialValue = useMemo(
     () => JSON.parse(localStorage.getItem('content')) || [
-      {"type":"paragraph","align":"left","checked":false,"children":[{"marks":[],"text":"TEST"}]},{"type":"h1","align":"left","checked":false,"children":[{"marks":[],"text":"1"}]},{"type":"h2","align":"left","children":[{"text":"2","marks":[]}]},{"type":"paragraph","align":"left","children":[{"text":"BOLD","marks":[],"bold":true}]},{"type":"paragraph","align":"left","children":[{"text":"italic","marks":[],"italic":true}]},{"type":"paragraph","align":"left","children":[{"text":"underline","marks":[],"underline":true}]},{"type":"paragraph","align":"left","children":[{"text":"<code>","marks":[],"code":true}]},{"type":"check-list","align":"left","children":[{"text":"Check","marks":[]}]},{"type":"check-list","align":"left","children":[{"marks":[],"text":"List"}],"checked":true},{"type":"block-quote","align":"left","children":[{"text":"Quote","marks":[]}]},{"type":"numbered-list","children":[{"type":"list-item","align":"left","children":[{"marks":[],"text":"list"}]}]},{"type":"bulleted-list","children":[{"type":"list-item","align":"left","children":[{"marks":[],"text":"bullet list"}]}]},{"type":"list-item","align":"left","children":[{"text":"left","marks":[]}]},{"type":"list-item","align":"center","children":[{"marks":[],"text":"center"}]},{"type":"list-item","align":"right","children":[{"marks":[],"text":"right"}]},{"type":"list-item","align":"justify","children":[{"marks":[],"text":"justify"}]},{"type":"list-item","children":[{"marks":[],"text":""}]}]
-    ,
+      {"type":"paragraph","align":"left","checked":false,"children":[{"marks":[],"text":"TEST"}]},{"type":"h1","align":"left","checked":false,"children":[{"marks":[],"text":"1"}]},{"type":"h2","align":"left","children":[{"text":"2","marks":[]}]},{"type":"paragraph","align":"left","children":[{"text":"BOLD","marks":[],"bold":true}]},{"type":"paragraph","align":"left","children":[{"text":"italic","marks":[],"italic":true}]},{"type":"paragraph","align":"left","children":[{"text":"underline","marks":[],"underline":true}]},{"type":"paragraph","align":"left","children":[{"text":"<code>","marks":[],"code":true}]},{"type":"check-list","align":"left","children":[{"text":"Check","marks":[]}]},{"type":"check-list","align":"left","children":[{"marks":[],"text":"List"}],"checked":true},{"type":"block-quote","align":"left","children":[{"text":"Quote","marks":[]}]},{"type":"numbered-list","children":[{"type":"list-item","align":"left","children":[{"marks":[],"text":"list"}]}]},{"type":"bulleted-list","children":[{"type":"list-item","align":"left","children":[{"marks":[],"text":"bullet list"}]}]},{"type":"list-item","align":"left","children":[{"text":"left","marks":[]}]},{"type":"list-item","align":"center","children":[{"marks":[],"text":"center"}]},{"type":"list-item","align":"right","children":[{"marks":[],"text":"right"}]},{"type":"list-item","align":"justify","children":[{"marks":[],"text":"justify"}]},{"type":"list-item","children":[{"marks":[],"text":""}]}
+    ],
     []
   );
+
   useEffect(() => {
     if (recognizedText) {
-      // Insert the recognized text into the editor
-      let active = isBlockActive(
-        editor,
-        'list-item',
-        'type'
-      );
+      const active = isBlockActive(editor, 'list-item', 'type');
       if (active) {
         toggleBlock(editor, 'list-item');
       }
       Transforms.insertNodes(editor, Quote(recognizedText));
     }
-      setRecognizedText('');
-  },  [recognizedText, editor]);
+    setRecognizedText('');
+  }, [recognizedText, editor]);
+
   return (
     <Slate
       editor={editor}
       initialValue={initialValue}
       onChange={(value) => {
-        let isAstChange = editor.operations.some((op) => 'set_selection' !== op.type);
+        const isAstChange = editor.operations.some((op) => 'set_selection' !== op.type);
         if (isAstChange) {
-          let content = JSON.stringify(value);
+          const content = JSON.stringify(value);
           localStorage.setItem('content', content);
         }
       }}
@@ -76,16 +72,16 @@ let Miv = () => {
         autoFocus
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
-            let currentBlock = Node.descendant(editor, editor.selection.anchor.path.slice(0, -1));
-            let newLine = {
-                  type: "paragraph",
-                  align: "left",
-                  children: [
-                    {
-                      text: "",
-                      marks: []
-                    }
-                  ]
+            const currentBlock = Node.descendant(editor, editor.selection.anchor.path.slice(0, -1));
+            const newLine = {
+              type: "paragraph",
+              align: "left",
+              children: [
+                {
+                  text: "",
+                  marks: []
+                }
+              ]
             };
             switch(currentBlock.type) {
               case 'h1': 
@@ -107,32 +103,32 @@ let Miv = () => {
                 break;
               default:
                 return;
-          }
-        } else if (e.key === 'Backspace'){
-            let currentBlock = Node.descendant(editor, editor.selection.anchor.path.slice(0, -1));
-            let newLine = {
-                  type: "paragraph",
-                  align: "left",
-                  children: [
-                    {
-                      text: "",
-                      marks: []
-                    }
-                  ]
+            }
+          } else if (e.key === 'Backspace'){
+            const currentBlock = Node.descendant(editor, editor.selection.anchor.path.slice(0, -1));
+            const newLine = {
+              type: "paragraph",
+              align: "left",
+              children: [
+                {
+                  text: "",
+                  marks: []
+                }
+              ]
             };
             switch(currentBlock.type) {
               case 'list-item':
-                  if (currentBlock.children[0].text === '') {
-                    toggleBlock(editor, 'list-item');  
-                  }
-                  break;
+                if (currentBlock.children[0].text === '') {
+                  toggleBlock(editor, 'list-item');  
+                }
+                break;
               case 'block-quote':
-                  if (currentBlock.children[0].text === '') {
-                    Transforms.setNodes(editor, newLine);
-                    editor.removeMark('bold');
-                    editor.removeMark('italic');
-                  }
-                  break;
+                if (currentBlock.children[0].text === '') {
+                  Transforms.setNodes(editor, newLine);
+                  editor.removeMark('bold');
+                  editor.removeMark('italic');
+                }
+                break;
               default:
                 return;
             }
@@ -140,7 +136,7 @@ let Miv = () => {
             for (let key in HOTKEYS) {
               if (isHotkey(key, e)) {
                 e.preventDefault();
-                let mark = HOTKEYS[key];
+                const mark = HOTKEYS[key];
                 toggleMark(editor, mark);
               }
             }
@@ -151,17 +147,17 @@ let Miv = () => {
   );
 };
 
-let HOTKEYS = {
+const HOTKEYS = {
   'mod+b': 'bold',
   'mod+i': 'italic',
   'mod+u': 'underline',
   'mod+`': 'code'
 };
 
-let LIST_TYPES = ['numbered-list', 'bulleted-list'];
-let TEXT_ALIGN_TYPES = ['left', 'center', 'right', 'justify'];
+const LIST_TYPES = ['numbered-list', 'bulleted-list'];
+const TEXT_ALIGN_TYPES = ['left', 'center', 'right', 'justify'];
 
-let Quote = (text) => {
+const Quote = (text) => {
   return (
     {"type":"block-quote",
       "align":"justify",
@@ -170,9 +166,9 @@ let Quote = (text) => {
   );
 };
 
-let Blocks = ({ attributes, children, element }) => {
-  let style = { textAlign: element.align };
-  let props = { attributes, children, element }
+const Blocks = ({ attributes, children, element }) => {
+  const style = { textAlign: element.align };
+  const props = { attributes, children, element }
   switch (element.type) {
     case 'block-quote':
       return (
@@ -199,23 +195,23 @@ let Blocks = ({ attributes, children, element }) => {
         </h2>
       );
     case 'h3':
-          return (
-            <h3 style={style} {...attributes}>
-              {children}
-            </h3>
-          );
+      return (
+        <h3 style={style} {...attributes}>
+          {children}
+        </h3>
+      );
     case 'h4':
-          return (
-            <h4 style={style} {...attributes}>
-              {children}
-            </h4>
-          );
+      return (
+        <h4 style={style} {...attributes}>
+          {children}
+        </h4>
+      );
     case 'h5':
-          return (
-            <h5 style={style} {...attributes}>
-              {children}
-            </h5>
-          );
+      return (
+        <h5 style={style} {...attributes}>
+          {children}
+        </h5>
+      );
     case 'list-item':
       return (
         <li style={style} {...attributes}>
@@ -247,7 +243,7 @@ let Blocks = ({ attributes, children, element }) => {
   }
 };
 
-let Leaf = ({ attributes, children, leaf }) => {
+const Leaf = ({ attributes, children, leaf }) => {
   if (leaf.bold) {
     children = <strong>{children}</strong>
   }
@@ -267,11 +263,11 @@ let Leaf = ({ attributes, children, leaf }) => {
   return <span {...attributes}>{children}</span>
 }
 
-let isBlockActive = (editor, format, blockType = 'type') => {
-  let { selection } = editor;
+const isBlockActive = (editor, format, blockType = 'type') => {
+  const { selection } = editor;
   if (!selection) return false;
 
-  let [match] = Array.from(
+  const [match] = Array.from(
     Editor.nodes(editor, {
       at: Editor.unhangRange(editor, selection),
       match: (n) =>
@@ -284,18 +280,18 @@ let isBlockActive = (editor, format, blockType = 'type') => {
   return !!match;
 };
 
-let isMarkActive = (editor, format) => {
-  let marks = Editor.marks(editor);
+const isMarkActive = (editor, format) => {
+  const marks = Editor.marks(editor);
   return marks ? marks[format] === true : false;
 };
 
-let toggleBlock = (editor, format) => {
-  let isActive = isBlockActive(
+const toggleBlock = (editor, format) => {
+  const isActive = isBlockActive(
     editor,
     format,
     TEXT_ALIGN_TYPES.includes(format) ? 'align' : 'type'
   );
-  let isList = LIST_TYPES.includes(format);
+  const isList = LIST_TYPES.includes(format);
 
   Transforms.unwrapNodes(editor, {
     match: (n) =>
@@ -318,13 +314,13 @@ let toggleBlock = (editor, format) => {
   Transforms.setNodes(editor, newProperties);
 
   if (!isActive && isList) {
-    let block = { type: format, children: [] };
+    const block = { type: format, children: [] };
     Transforms.wrapNodes(editor, block);
   }
 };
 
-let toggleMark = (editor, format) => {
-  let isActive = isMarkActive(editor, format);
+const toggleMark = (editor, format) => {
+  const isActive = isMarkActive(editor, format);
 
   if (isActive) {
     Editor.removeMark(editor, format);
@@ -333,9 +329,9 @@ let toggleMark = (editor, format) => {
   }
 };
 
-let BlockButton = ({ format }) => {
-  let editor = useSlate();
-  let isActive = isBlockActive(editor, format, TEXT_ALIGN_TYPES.includes(format) ? 'align' : 'type');
+const BlockButton = ({ format }) => {
+  const editor = useSlate();
+  const isActive = isBlockActive(editor, format, TEXT_ALIGN_TYPES.includes(format) ? 'align' : 'type');
   return (
     <button
       style={{
@@ -355,9 +351,9 @@ let BlockButton = ({ format }) => {
   );
 };
 
-let MarkButton = ({ format }) => {
-  let editor = useSlate();
-  let isActive = isMarkActive(editor, format);
+const MarkButton = ({ format }) => {
+  const editor = useSlate();
+  const isActive = isMarkActive(editor, format);
   return (
     <button
       style={{
@@ -377,57 +373,57 @@ let MarkButton = ({ format }) => {
   );
 };
 
-let renderElement = (props) => {
+const renderElement = (props) => {
   return <Blocks {...props} />;
 };
 
-let renderLeaf = (props) => {
+const renderLeaf = (props) => {
   return <Leaf {...props} />;
 };
 
-let withChecklists = editor => {
-  let { deleteBackward } = editor
+const withChecklists = editor => {
+  const { deleteBackward } = editor;
 
   editor.deleteBackward = (...args) => {
-    let { selection } = editor
+    const { selection } = editor;
 
     if (selection && Range.isCollapsed(selection)) {
-      let [match] = Editor.nodes(editor, {
+      const [match] = Editor.nodes(editor, {
         match: n =>
           !Editor.isEditor(n) &&
           Element.isElement(n) &&
           (n.type === 'check-list' || n.type === 'list-item')
-      })
+      });
 
       if (match) {
-        let [, path] = match
-        let start = Editor.start(editor, path)
+        const [, path] = match;
+        const start = Editor.start(editor, path);
 
         if (Point.equals(selection.anchor, start)) {
-          let newProperties = {
+          const newProperties = {
             type: 'paragraph',
-          }
+          };
           Transforms.setNodes(editor, newProperties, {
             match: n =>
               !Editor.isEditor(n) &&
               Element.isElement(n) &&
               (n.type === 'check-list' || n.type === 'list-item')
-          })
-          return
+          });
+          return;
         }
       }
     }
 
-    deleteBackward(...args)
-  }
+    deleteBackward(...args);
+  };
 
-  return editor
-}
+  return editor;
+};
 
-let CheckList = ({ attributes, children, element }) => {
-  let editor = useSlateStatic();
-  let readOnly = useReadOnly();
-  let { checked = false } = element; // Default to false if checked is undefined
+const CheckList = ({ attributes, children, element }) => {
+  const editor = useSlateStatic();
+  const readOnly = useReadOnly();
+  const { checked = false } = element; // Default to false if checked is undefined
 
   return (
     <div
@@ -448,8 +444,8 @@ let CheckList = ({ attributes, children, element }) => {
           type="checkbox"
           checked={checked}
           onChange={event => {
-            let path = ReactEditor.findPath(editor, element);
-            let newProperties = {
+            const path = ReactEditor.findPath(editor, element);
+            const newProperties = {
               checked: event.target.checked,
             };
             Transforms.setNodes(editor, newProperties, { at: path });
@@ -512,3 +508,4 @@ const withImages = (editor) => {
 };
 
 export default Miv;
+
