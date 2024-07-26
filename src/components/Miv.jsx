@@ -101,6 +101,9 @@ const Miv = () => {
                   toggleBlock(editor, 'list-item');  
                 }
                 break;
+              case 'image':
+                e.preventDefault()
+                Transforms.insertNodes(editor, newLine);
               default:
                 return;
             }

@@ -111,11 +111,11 @@ let ScreenCapture = ({ onCapture }) => {
   };
 
   return (
-    <div>
+    <span>
       <button onClick={captureScreen}>Capture Screen</button>
       <video ref={videoRef} style={{ display: 'none' }}></video>
       {selectionMode && (
-        <div
+        <span
           ref={overlayRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
@@ -130,7 +130,7 @@ let ScreenCapture = ({ onCapture }) => {
           }}
         >
           {isSelecting && (
-            <div
+            <span
               ref={selectionBoxRef}
               style={{
                 position: 'absolute',
@@ -142,11 +142,11 @@ let ScreenCapture = ({ onCapture }) => {
                 backgroundColor: 'rgba(0, 0, 0, 0.2)',
                 zIndex: 1000,
               }}
-            ></div>
+            ></span>
           )}
-        </div>
+        </span>
       )}
-    </div>
+    </span>
   );
 };
 

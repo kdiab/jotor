@@ -3,12 +3,12 @@ import { Transforms } from 'slate';
 import { useSlateStatic, useSelected, useFocused } from 'slate-react';
 import { css } from '@emotion/css';
 
-const ImageElement = ({ attributes, children, element }) => {
-  const selected = useSelected();
-  const focused = useFocused();
+let ImageElement = ({ attributes, children, element }) => {
+  let selected = useSelected();
+  let focused = useFocused();
 
   return (
-    <div
+    <span
       {...attributes}
       className={css`
         position: relative;
@@ -17,7 +17,7 @@ const ImageElement = ({ attributes, children, element }) => {
         ${selected && focused ? 'box-shadow: 0 0 0 3px #B4D5FF;' : ''}
       `}
     >
-      <div contentEditable={false}>
+      <span contentEditable={false}>
         <img
           src={element.url}
           alt="Image"
@@ -27,38 +27,38 @@ const ImageElement = ({ attributes, children, element }) => {
             max-height: 20em;
           `}
         />
-      </div>
+      </span>
       {children}
-    </div>
+    </span>
   );
 };
 
-const InsertImage = (editor, url) => {
-  const text = { text: '' };
-  const image = { type: 'image', url, children: [text] };
+let InsertImage = (editor, url) => {
+  let text = { text: '' };
+  let image = { type: 'image', url, children: [text] };
   Transforms.insertNodes(editor, image);
 };
 
-const IsImageUrl = (url) => {
+let IsImageUrl = (url) => {
   if (!url) return false;
-  const ext = new URL(url).pathname.split('.').pop();
+  let ext = new URL(url).pathname.split('.').pop();
   return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext);
 };
 
-const ImageUploadButton = () => {
-  const editor = useSlateStatic();
-  const inputRef = useRef(null);
+let ImageUploadButton = () => {
+  let editor = useSlateStatic();
+  let inputRef = useRef(null);
 
-  const handleButtonClick = () => {
+  let handleButtonClick = () => {
     inputRef.current.click();
   };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
+  let handleFileChange = (event) => {
+    let file = event.target.files[0];
     if (file) {
-      const reader = new FileReader();
+      let reader = new FileReader();
       reader.addEventListener('load', () => {
-        const url = reader.result;
+        let url = reader.result;
         InsertImage(editor, url);
       });
       reader.readAsDataURL(file);
@@ -66,7 +66,7 @@ const ImageUploadButton = () => {
   };
 
   return (
-    <div>
+    <span>
       <button onClick={handleButtonClick}>Upload Image</button>
       <input
         type="file"
@@ -74,7 +74,7 @@ const ImageUploadButton = () => {
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
-    </div>
+    </span>
   );
 };
 
