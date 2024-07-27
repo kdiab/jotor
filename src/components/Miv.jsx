@@ -471,7 +471,7 @@ const CheckList = ({ attributes, children, element }) => {
 };
 
 const withImages = (editor) => {
-  const { insertData, isVoid, deleteBackward } = editor;
+  const { insertData, isVoid, deleteBackward, setNodes } = editor;
 
   editor.isVoid = (element) => {
     return element.type === 'image' ? true : isVoid(element);
@@ -487,14 +487,14 @@ const withImages = (editor) => {
 
       reader.addEventListener('load', () => {
         const url = reader.result;
-        InsertImage(editor, url);
+        insertImage(editor, url);
       });
 
       reader.readAsDataURL(file);
     } else if (IsImageUrl(text)) {
       InsertImage(editor, text);
     } else {
-      insertData(data);
+      InsertData(data);
     }
   };
 
@@ -507,8 +507,24 @@ const withImages = (editor) => {
     deleteBackward(...args);
   };
 
+  editor.setNodes = (props) => {
+    const { selection } = editor;
+    if (selection && Editor.nodes(editor, { match: n => n.type === 'image' }).length) {
+      if (props.align) {
+        Transforms.setNodes(editor, props, { match: n => n.type === 'image' });
+      }
+      return;
+    }
+    setNodes(props);
+  };
+
+  editor.insertImageFromCapture = (url) => {
+    InsertImage(editor, url);
+  };
+
   return editor;
 };
+
 
 export default Miv;
 
