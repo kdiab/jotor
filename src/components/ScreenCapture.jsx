@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import Tesseract from 'tesseract.js';
 
-let ScreenCapture = ({ onCapture }) => {
+let ScreenCapture = ({ onCapture, outputType = 'text' }) => {
   let [isSelecting, setIsSelecting] = useState(false);
   let [startX, setStartX] = useState(0);
   let [startY, setStartY] = useState(0);
@@ -73,9 +73,7 @@ let ScreenCapture = ({ onCapture }) => {
 
     // Temporarily hide the overlay and selection box
     document.documentElement.style.cursor = 'none';
-    if (overlayRef.current) {
-      overlayRef.current.style.display = 'none';
-    }
+    overlayRef.current.style.display = 'none';
 
     // Allow the video frame to render without the overlay
     await new Promise((resolve) => setTimeout(resolve, 100));
@@ -90,18 +88,22 @@ let ScreenCapture = ({ onCapture }) => {
     stream.getTracks().forEach((track) => track.stop());
     video.srcObject = null;
 
-    // Use Tesseract to recognize text from the captured image
-    Tesseract.recognize(
-      imageData,
-      'eng',
-      {
-        logger: (m) => console.log(m)
-      }
-    ).then(({ data: { text } }) => {
-      console.log('Recognized text:', text);
-      let sanitizedText = text.replace(/[\t\n|]/g,' ');
-      onCapture(sanitizedText);
-    });
+    if (outputType === 'image') {
+      onCapture(imageData);
+    } else if (outputType === 'text') {
+      // Use Tesseract to recognize text from the captured image
+      Tesseract.recognize(
+        imageData,
+        'eng',
+        {
+          logger: (m) => console.log(m)
+        }
+      ).then(({ data: { text } }) => {
+        console.log('Recognized text:', text);
+        let sanitizedText = text.replace(/[\t\n|]/g, ' ');
+        onCapture(sanitizedText);
+      });
+    }
 
     // Restore the overlay display
     document.documentElement.style.cursor = '';
@@ -112,7 +114,7 @@ let ScreenCapture = ({ onCapture }) => {
 
   return (
     <span>
-      <button onClick={captureScreen}>Capture Screen</button>
+      <button onClick={captureScreen}>{outputType === 'text' ? 'Capture Screen' : 'Capture Image'}</button>
       <video ref={videoRef} style={{ display: 'none' }}></video>
       {selectionMode && (
         <span
