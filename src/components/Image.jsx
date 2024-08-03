@@ -13,7 +13,7 @@ let ImageElement = ({ attributes, children, element }) => {
       className={css`
         position: relative;
         display: block;
-        text-align: ${element.align || 'left'};
+        text-align: left;
         ${selected && focused ? 'box-shadow: 0 0 0 3px #B4D5FF;' : ''}
       `}
     >

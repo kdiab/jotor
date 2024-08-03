@@ -71,10 +71,6 @@ let Miv = () => {
       <BlockButton format="block-quote" />
       <BlockButton format="numbered-list" />
       <BlockButton format="bulleted-list" />
-      <BlockButton format="left" />
-      <BlockButton format="center" />
-      <BlockButton format="right" />
-      <BlockButton format="justify" />
       <div>
         <p>{recognizedText}</p>
       </div>
@@ -172,7 +168,6 @@ let HOTKEYS = {
 };
 
 let LIST_TYPES = ['numbered-list', 'bulleted-list'];
-let TEXT_ALIGN_TYPES = ['left', 'center', 'right', 'justify'];
 
 let Quote = (text) => {
   return (
@@ -184,7 +179,7 @@ let Quote = (text) => {
 };
 
 let Blocks = ({ attributes, children, element }) => {
-  let style = { textAlign: element.align };
+  let style = { textAlign: 'left'};
   let props = { attributes, children, element }
   switch (element.type) {
     case 'block-quote':
@@ -305,8 +300,7 @@ let isMarkActive = (editor, format) => {
 let toggleBlock = (editor, format) => {
   let isActive = isBlockActive(
     editor,
-    format,
-    TEXT_ALIGN_TYPES.includes(format) ? 'align' : 'type'
+    format
   );
   let isList = LIST_TYPES.includes(format);
 
@@ -319,15 +313,9 @@ let toggleBlock = (editor, format) => {
   });
 
   let newProperties;
-  if (TEXT_ALIGN_TYPES.includes(format)) {
-    newProperties = {
-      align: isActive ? undefined : format,
-    };
-  } else {
     newProperties = {
       type: isActive ? 'paragraph' : isList ? 'list-item' : format,
-    };
-  }
+    }
   Transforms.setNodes(editor, newProperties);
 
   if (!isActive && isList) {
@@ -348,7 +336,7 @@ let toggleMark = (editor, format) => {
 
 let BlockButton = ({ format }) => {
   let editor = useSlate();
-  let isActive = isBlockActive(editor, format, TEXT_ALIGN_TYPES.includes(format) ? 'align' : 'type');
+  let isActive = isBlockActive(editor, format, 'type');
   return (
     <button
       style={{
@@ -448,7 +436,7 @@ let CheckList = ({ attributes, children, element }) => {
       style={{
         display: 'flex',
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'left',
       }}
     >
       <span
@@ -524,9 +512,7 @@ let withImages = (editor) => {
   editor.setNodes = (props) => {
     let { selection } = editor;
     if (selection && Editor.nodes(editor, { match: n => n.type === 'image' }).length) {
-      if (props.align) {
         Transforms.setNodes(editor, props, { match: n => n.type === 'image' });
-      }
       return;
     }
     setNodes(props);
